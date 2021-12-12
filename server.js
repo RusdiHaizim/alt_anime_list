@@ -1,7 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const path = require("path");
-const config = require("config");
 const cors = require("cors");
 
 // const authRoutes = require("./routes/auth");
@@ -20,7 +19,6 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-const dbURI = config.get("dbURI");
 const port = process.env.PORT || 4000;
 
 require("dotenv").config();
