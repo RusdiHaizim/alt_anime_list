@@ -10,6 +10,7 @@ import {
   Box,
 } from "@mui/material";
 import PopoverCard from "./PopoverCard";
+import { getMyAnimeReco } from "../calls/animeCalls";
 
 const AnimeCard = (props) => {
   const title = props.anime.title;
@@ -56,9 +57,18 @@ const AnimeCard = (props) => {
 
   //   Modal code
 
-  const handleModalOpen = () => {
+  const handleModalOpen = async () => {
     props.handleClickOpenModal();
-    props.setChosenAnime(props.anime);
+    props.setChosenAnime(props.anime.title);
+    queryAnimeMyR(props.anime.title);
+  };
+
+  const queryAnimeMyR = async (chosenAnime) => {
+    const resp = await getMyAnimeReco({ query: chosenAnime });
+    // console.log("myanimeR:", resp.data.my_recommendations);
+    if (resp.data) {
+      props.setChosenAnimeMyR(resp.data.my_recommendations);
+    }
   };
 
   const openPopover = Boolean(anchorEl);

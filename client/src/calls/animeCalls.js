@@ -11,3 +11,14 @@ export const getAnimes = async (data) => {
   });
   return resp;
 };
+
+export const getMyAnimeReco = async (data) => {
+  const { query } = data;
+  console.log("get anime reco:", query);
+  const resp = await axios.get(api.getMyAnimeReco, {
+    params: {
+      query: query,
+    },
+  });
+  return resp;
+};

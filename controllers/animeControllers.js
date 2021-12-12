@@ -20,6 +20,21 @@ module.exports.get_animes = (req, res) => {
   }
 };
 
+// Query for 'my' anime recommendations
+module.exports.get_anime_my_rec = (req, res) => {
+  const { query } = req.query;
+  console.log("giving my anime reco for;", query);
+  if (typeof query !== "undefined") {
+    Anime.findOne(
+      { title: { $regex: query, $options: "i" } },
+      "title my_recommendations"
+    )
+      .sort({ score: -1 })
+      .limit(12)
+      .then((animes) => res.json(animes));
+  }
+};
+
 // Create new anime
 // module.exports.post_anime = (req, res) => {
 //   const newAnime = new Anime(req.body);
@@ -28,7 +43,7 @@ module.exports.get_animes = (req, res) => {
 
 // Get animes
 module.exports.query_animes = (req, res) => {
-  const { query } = req.params;
+  const { anime } = req.params;
   console.log("hitting query");
   console.log(query);
   Anime.find(

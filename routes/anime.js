@@ -13,4 +13,7 @@ router.get("/anime", animeController.get_animes);
 // Query for anime based on search term
 // router.get("/anime/:query", animeController.query_animes);
 
+// Get 'my' recommendation based on given anime
+router.get("/anime_my_reco", animeController.get_anime_my_rec);
+
 module.exports = router;

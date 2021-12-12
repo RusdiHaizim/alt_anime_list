@@ -7,7 +7,7 @@ import {
   TextField,
 } from "@mui/material";
 import AnimeCard from "../components/AnimeCard";
-import { getAnimes } from "../calls/animeCalls";
+import { getAnimes, getMyAnimeReco } from "../calls/animeCalls";
 import SearchIcon from "@mui/icons-material/Search";
 import AwesomeDebouncePromise from "awesome-debounce-promise";
 import ModalAnime from "../components/ModalAnime";
@@ -52,16 +52,26 @@ const AnimeListPage = (props) => {
   };
 
   //   Model Code
+  const [chosenAnime, setChosenAnime] = useState("");
+  const [chosenAnimeMyR, setChosenAnimeMyR] = useState([]);
   const [openModal, setOpenModal] = useState(false);
-  const handleClickOpenModal = () => {
+
+  const handleClickOpenModal = async () => {
     setOpenModal(true);
+    console.log("CHOSEN ANIME:", chosenAnime);
+    console.log("CHOSEN ANIME R:", chosenAnimeMyR);
+    // queryAnimeMyR();
   };
+
+  // const queryAnimeMyR = async () => {
+  //   const resp = await getMyAnimeReco(chosenAnime);
+  //   console.log(resp.data[0]);
+  //   setChosenAnimeMyR([...resp.data]);
+  // };
 
   const handleCloseModal = () => {
     setOpenModal(false);
   };
-
-  const [chosenAnime, setChosenAnime] = useState({});
 
   return (
     <Container>
@@ -112,6 +122,7 @@ const AnimeListPage = (props) => {
                   anime={anime}
                   handleClickOpenModal={handleClickOpenModal}
                   setChosenAnime={setChosenAnime}
+                  setChosenAnimeMyR={setChosenAnimeMyR}
                 />
               </Grid>
             ))
@@ -121,6 +132,7 @@ const AnimeListPage = (props) => {
                   anime={anime}
                   handleClickOpenModal={handleClickOpenModal}
                   setChosenAnime={setChosenAnime}
+                  setChosenAnimeMyR={setChosenAnimeMyR}
                 />
               </Grid>
             ))}
@@ -137,6 +149,7 @@ const AnimeListPage = (props) => {
         anime={chosenAnime}
         openModal={openModal}
         handleCloseModal={handleCloseModal}
+        myRecommendations={chosenAnimeMyR}
       />
     </Container>
   );
