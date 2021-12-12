@@ -1,0 +1,31 @@
+{
+  "name": "animelist",
+  "version": "1.0.0",
+  "description": "Anime recommendation project",
+  "main": "server.js",
+  "proxy": "http://localhost:3000",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "server": "nodemon server.js",
+    "build": "cd client && npm run build",
+    "install-client": "cd client && npm install",
+    "heroku-postbuild": "npm run install-client && npm run build"
+  },
+  "author": "Rusdi",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.0.0",
+    "concurrently": "^5.3.0",
+    "config": "^3.3.3",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.11.11",
+    "validator": "^13.5.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  }
+}
