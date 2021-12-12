@@ -29,5 +29,9 @@ mongoose
     useUnifiedTopology: true,
     useCreateIndex: true,
   })
-  .then((result) => app.listen(port))
+  .then(() => console.log("MongoDB has been connected"))
   .catch((err) => console.log(err));
+
+app.listen(port, () => {
+  console.log(`server running on port ${port}`);
+});
