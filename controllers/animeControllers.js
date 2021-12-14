@@ -4,16 +4,20 @@ const Anime = require("../models/Anime");
 module.exports.get_animes = (req, res) => {
   const { query } = req.query;
   // console.log("getting animes", query);
-  if (query) {
+  if (query !== "") {
     Anime.find(
       { title: { $regex: ".*" + query + ".*", $options: "i" } },
-      "title score link img_url synopsis genre_list"
+      "title score uid img_url synopsis genre_list"
     )
       .sort({ score: -1 })
       .limit(12)
-      .then((animes) => res.json(animes));
+      .then((animes) => {
+        res.json(animes);
+        console.log(`query given: ${query}`);
+      });
   } else {
-    Anime.find({}, "title score link img_url synopsis genre_list")
+    console.log(`no query in /anime`);
+    Anime.find({}, "title score uid img_url synopsis genre_list")
       .sort({ score: -1 })
       .limit(12)
       .then((animes) => res.json(animes));
@@ -23,15 +27,35 @@ module.exports.get_animes = (req, res) => {
 // Query for 'my' anime recommendations
 module.exports.get_anime_my_rec = (req, res) => {
   const { query } = req.query;
-  console.log("giving my anime reco for;", query);
-  if (typeof query !== "undefined") {
-    Anime.findOne(
-      { title: { $regex: query, $options: "i" } },
-      "title my_recommendations"
-    )
+  if (Number.isNaN(Number(query))) {
+    console.log(`whew: ${query}`);
+    res
+      .status(400)
+      .json({ message: "Query is not a number! Please give anime uid" });
+  } else {
+    console.log(`query: ${typeof query} ${Number(query)}`);
+    Anime.findOne({ uid: query }, "title my_recommendations")
       .sort({ score: -1 })
       .limit(12)
-      .then((animes) => res.json(animes));
+      .then((animes) => {
+        // console.log(`MYLIST: ${typeof animes.my_recommendations}`);
+        console.log(`giving my anime reco for: ${animes.title}`);
+        const my_list = animes.my_recommendations;
+        Anime.find({ title: { $in: my_list } }, "title img_url -_id").then(
+          (animeLinks) => {
+            // console.log(`got the links: ${animeLinks}`);
+            res.json(animeLinks);
+          }
+        );
+      });
+
+    // Anime.findOne({ uid: query }, "title my_recommendations")
+    //   .sort({ score: -1 })
+    //   .limit(12)
+    //   .then((animes) => {
+    //     res.json(animes);
+    //     console.log(`giving my anime reco for: ${animes.title}`);
+    //   });
   }
 };
 

@@ -60,14 +60,14 @@ const AnimeCard = (props) => {
   const handleModalOpen = async () => {
     props.handleClickOpenModal();
     props.setChosenAnime(props.anime.title);
-    queryAnimeMyR(props.anime.title);
+    queryAnimeMyR(props.anime.uid);
   };
 
   const queryAnimeMyR = async (chosenAnime) => {
     const resp = await getMyAnimeReco({ query: chosenAnime });
     // console.log("myanimeR:", resp.data.my_recommendations);
     if (resp.data) {
-      props.setChosenAnimeMyR(resp.data.my_recommendations);
+      props.setChosenAnimeMyR(resp.data);
     }
   };
 
