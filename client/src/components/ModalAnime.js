@@ -137,7 +137,7 @@ const ModalAnime = (props) => {
                     }}
                     variant="h4"
                   >
-                    {anime.title}
+                    {anime.eng_title}
                   </Typography>
                 </CardContent>
               </Card>

@@ -5,19 +5,25 @@ module.exports.get_animes = (req, res) => {
   const { query } = req.query;
   // console.log("getting animes", query);
   if (query !== "") {
+    // {$or:[{region: "NA"},{sector:"Some Sector"}]}
     Anime.find(
-      { title: { $regex: ".*" + query + ".*", $options: "i" } },
-      "title score uid img_url synopsis genre_list"
+      {
+        $or: [
+          { eng_title: { $regex: ".*" + query + ".*", $options: "i" } },
+          { title: { $regex: ".*" + query + ".*", $options: "i" } },
+        ],
+      },
+      "title eng_title score uid img_url synopsis genre_list"
     )
       .sort({ score: -1 })
       .limit(12)
       .then((animes) => {
         res.json(animes);
-        console.log(`query given: ${query}`);
+        // console.log(`query given: ${query}`);
       });
   } else {
     console.log(`no query in /anime`);
-    Anime.find({}, "title score uid img_url synopsis genre_list")
+    Anime.find({}, "title eng_title score uid img_url synopsis genre_list")
       .sort({ score: -1 })
       .limit(12)
       .then((animes) => res.json(animes));
@@ -34,19 +40,20 @@ module.exports.get_anime_my_rec = (req, res) => {
       .json({ message: "Query is not a number! Please give anime uid" });
   } else {
     console.log(`query: ${typeof query} ${Number(query)}`);
-    Anime.findOne({ uid: query }, "title my_recommendations")
+    Anime.findOne({ uid: query }, "title eng_title my_recommendations")
       .sort({ score: -1 })
       .limit(12)
       .then((animes) => {
         // console.log(`MYLIST: ${typeof animes.my_recommendations}`);
-        console.log(`giving my anime reco for: ${animes.title}`);
+        console.log(`giving my anime reco for: ${animes.eng_title}`);
         const my_list = animes.my_recommendations;
-        Anime.find({ title: { $in: my_list } }, "title img_url -_id").then(
-          (animeLinks) => {
-            // console.log(`got the links: ${animeLinks}`);
-            res.json(animeLinks);
-          }
-        );
+        Anime.find(
+          { title: { $in: my_list } },
+          "title eng_title img_url -_id"
+        ).then((animeLinks) => {
+          // console.log(`got the links: ${animeLinks}`);
+          res.json(animeLinks);
+        });
       });
 
     // Anime.findOne({ uid: query }, "title my_recommendations")

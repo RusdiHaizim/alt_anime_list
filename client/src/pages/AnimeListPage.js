@@ -33,18 +33,22 @@ const AnimeListPage = (props) => {
     setSearchValue(e.target.value);
     e.preventDefault();
     console.log("search:", search);
-    // AwesomeDebouncePromise(queryAnime, 500);
-    // queryAnime();
-    const resp = await searchAPIDebounced();
-    setQueryAnimes([...resp.data]);
-    console.log(queryAnimes);
+    if (e.target.value === "") {
+      setQueryAnimes([]);
+    } else {
+      // AwesomeDebouncePromise(queryAnime, 500);
+      // queryAnime();
+      const resp = await searchAPIDebounced();
+      setQueryAnimes([...resp.data]);
+      console.log(queryAnimes);
+    }
   };
 
   const searchApi = () => {
     return getAnimes({ query: search });
   };
 
-  const searchAPIDebounced = AwesomeDebouncePromise(searchApi, 500);
+  const searchAPIDebounced = AwesomeDebouncePromise(searchApi, 300);
 
   const queryAnime = async () => {
     const resp = await getAnimes({ query: search });

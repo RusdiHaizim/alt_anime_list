@@ -13,12 +13,13 @@ import PopoverCard from "./PopoverCard";
 import { getMyAnimeReco } from "../calls/animeCalls";
 
 const AnimeCard = (props) => {
-  const title = props.anime.title;
-  const anime_link = props.anime.link;
+  const title = props.anime.eng_title;
+  // const jap_title = props.anime.title;
+  // const anime_link = props.anime.link;
   const img_url = props.anime.img_url;
-  const score = props.anime.score;
-  const synopsis = props.anime.synopsis;
-  const genres = props.anime.genre_list;
+  // const score = props.anime.score;
+  // const synopsis = props.anime.synopsis;
+  // const genres = props.anime.genre_list;
 
   const [hover, setHover] = useState({
     raised: false,
@@ -59,7 +60,7 @@ const AnimeCard = (props) => {
 
   const handleModalOpen = async () => {
     props.handleClickOpenModal();
-    props.setChosenAnime(props.anime.title);
+    props.setChosenAnime(props.anime.eng_title);
     queryAnimeMyR(props.anime.uid);
   };
 

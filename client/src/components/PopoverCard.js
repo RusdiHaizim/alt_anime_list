@@ -5,7 +5,10 @@ const PopoverCard = ({ anime, ...rest }) => {
     <Card sx={{ px: 1 }}>
       <CardContent sx={{ maxWidth: 500 }}>
         <Typography noWrap variant="h3">
-          {anime.title}
+          {anime.eng_title}
+        </Typography>
+        <Typography sx={{ marginBottom: 2 }} noWrap variant="h4">
+          <i>{anime.title}</i>
         </Typography>
         <Typography sx={{ my: 1 }} variant="body2">
           {anime.synopsis.substring(0, 400)}

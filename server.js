@@ -22,7 +22,6 @@ if (process.env.NODE_ENV === "production") {
 const port = process.env.PORT || 4000;
 
 require("dotenv").config();
-
 mongoose
   .connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
