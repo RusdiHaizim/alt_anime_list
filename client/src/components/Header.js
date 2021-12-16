@@ -7,7 +7,7 @@ const Header = () => {
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h5" component="div" sx={{ px: 1, flexGrow: 1 }}>
-            Anime List Alter
+            Alt Anime List
           </Typography>
         </Toolbar>
       </AppBar>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Container,
   Grid,
@@ -11,6 +11,7 @@ import { getAnimes, getMyAnimeReco } from "../calls/animeCalls";
 import SearchIcon from "@mui/icons-material/Search";
 import AwesomeDebouncePromise from "awesome-debounce-promise";
 import ModalAnime from "../components/ModalAnime";
+import debounce from "lodash.debounce";
 
 const AnimeListPage = (props) => {
   const [animes, setAnimes] = useState([]);
@@ -29,26 +30,30 @@ const AnimeListPage = (props) => {
     fetchData();
   }, []);
 
+  const debouncedSearch = useCallback(
+    debounce((nextValue) => searchApi(nextValue), 500),
+    []
+  );
+
   const handleSearch = async (e) => {
-    setSearchValue(e.target.value);
+    // setSearchValue(e.target.value);
     e.preventDefault();
-    console.log("search:", search);
+    // console.log("search:", e.target.value);
     if (e.target.value === "") {
       setQueryAnimes([]);
     } else {
-      // AwesomeDebouncePromise(queryAnime, 500);
       // queryAnime();
-      const resp = await searchAPIDebounced();
-      setQueryAnimes([...resp.data]);
-      console.log(queryAnimes);
+      // const resp = await getAnimes({ query: e.target.value });
+      // setQueryAnimes([...resp.data]);
+      // console.log(queryAnimes);
+      debouncedSearch(e.target.value);
     }
   };
 
-  const searchApi = () => {
-    return getAnimes({ query: search });
+  const searchApi = async (anime_q) => {
+    const resp = await getAnimes({ query: anime_q });
+    setQueryAnimes([...resp.data]);
   };
-
-  const searchAPIDebounced = AwesomeDebouncePromise(searchApi, 300);
 
   const queryAnime = async () => {
     const resp = await getAnimes({ query: search });
@@ -114,7 +119,11 @@ const AnimeListPage = (props) => {
             // onChange={(e) => {
             //   setSearchValue(e.target.value);
             // }}
-            onChange={handleSearch}
+            // onChange={handleSearch}
+            onChange={(e) => {
+              setSearchValue(e.target.value);
+              handleSearch(e);
+            }}
           />
           {/* <SearchIcon></SearchIcon> */}
           {/* </form> */}

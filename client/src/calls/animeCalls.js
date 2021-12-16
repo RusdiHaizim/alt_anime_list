@@ -3,7 +3,7 @@ import api from "../api";
 
 export const getAnimes = async (data) => {
   const { query } = data;
-  console.log("get anime call:", query);
+  // console.log("get anime call:", query);
   const resp = await axios.get(api.getAnimes, {
     params: {
       query: query,
@@ -14,7 +14,7 @@ export const getAnimes = async (data) => {
 
 export const getMyAnimeReco = async (data) => {
   const { query } = data;
-  console.log("get anime reco:", query);
+  // console.log("get anime reco:", query);
   const resp = await axios.get(api.getMyAnimeReco, {
     params: {
       query: query,
