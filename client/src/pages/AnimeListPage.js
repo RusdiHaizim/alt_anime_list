@@ -2,81 +2,89 @@ import { useState, useEffect, useCallback } from "react";
 import {
   Container,
   Grid,
-  IconButton,
   InputAdornment,
   TextField,
+  Typography,
 } from "@mui/material";
 import AnimeCard from "../components/AnimeCard";
-import { getAnimes, getMyAnimeReco } from "../calls/animeCalls";
+import { getAnimes } from "../calls/animeCalls";
 import SearchIcon from "@mui/icons-material/Search";
-import AwesomeDebouncePromise from "awesome-debounce-promise";
 import ModalAnime from "../components/ModalAnime";
 import debounce from "lodash.debounce";
 
 const AnimeListPage = (props) => {
+  // display initial animes (w/o search term)
   const [animes, setAnimes] = useState([]);
+  // display animes after typing 'query' in search bar
   const [queryAnimes, setQueryAnimes] = useState([]);
   const [search, setSearchValue] = useState("");
 
-  useEffect(() => {
-    console.log("using effect", search);
-    async function fetchData() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+
+  async function fetchDefaultAnime() {
+    setLoading(true);
+    try {
+      // await new Promise((r) => setTimeout(r, 1000));
       const resp = await getAnimes({ query: "" });
-      //   const resp = await getAnimes({"query": query});
-      console.log(resp.data[0]);
       setAnimes([...resp.data]);
-      //   setDefaultAnimes([]);
+      setLoading(false);
+    } catch (error) {
+      console.log("Error in animeList:", error);
+      setLoading(false);
+      setError("Error occured in fetching initial animelist:", error);
     }
-    fetchData();
+  }
+
+  useEffect(() => {
+    console.log("Fetching top animes to show initially");
+    fetchDefaultAnime();
   }, []);
 
+  useEffect(() => {
+    if (search === "") {
+      console.log("Search empty, refetching initial list");
+      setQueryAnimes([]);
+      fetchDefaultAnime();
+    }
+  }, [search]);
+
+  // eslint-disable-next-line
   const debouncedSearch = useCallback(
-    debounce((nextValue) => searchApi(nextValue), 500),
+    debounce((nextValue) => searchApi(nextValue), 300),
     []
   );
 
   const handleSearch = async (e) => {
-    // setSearchValue(e.target.value);
     e.preventDefault();
-    // console.log("search:", e.target.value);
-    if (e.target.value === "") {
-      setQueryAnimes([]);
-    } else {
-      // queryAnime();
-      // const resp = await getAnimes({ query: e.target.value });
-      // setQueryAnimes([...resp.data]);
-      // console.log(queryAnimes);
-      debouncedSearch(e.target.value);
-    }
+    setSearchValue(e.target.value);
+    debouncedSearch(e.target.value);
   };
 
   const searchApi = async (anime_q) => {
-    const resp = await getAnimes({ query: anime_q });
-    setQueryAnimes([...resp.data]);
-  };
-
-  const queryAnime = async () => {
-    const resp = await getAnimes({ query: search });
-    setQueryAnimes([...resp.data]);
+    setLoading(true);
+    if (anime_q === "") {
+      setQueryAnimes([]);
+      setLoading(false);
+    } else {
+      // await new Promise((r) => setTimeout(r, 1000));
+      const resp = await getAnimes({ query: anime_q });
+      setQueryAnimes([...resp.data]);
+      setAnimes([]);
+      setLoading(false);
+    }
   };
 
   //   Model Code
-  const [chosenAnime, setChosenAnime] = useState("");
+  const [chosenAnime, setChosenAnime] = useState(null);
   const [chosenAnimeMyR, setChosenAnimeMyR] = useState([]);
   const [openModal, setOpenModal] = useState(false);
 
   const handleClickOpenModal = async () => {
     setOpenModal(true);
-    console.log("CHOSEN ANIME:", chosenAnime);
-    console.log("CHOSEN ANIME R:", chosenAnimeMyR);
-    // queryAnimeMyR();
+    // console.log("CHOSEN ANIME:", chosenAnime);
+    // console.log("CHOSEN ANIME R:", chosenAnimeMyR);
   };
-
-  // const queryAnimeMyR = async () => {
-  //   const resp = await getMyAnimeReco(chosenAnime);
-  //   console.log(resp.data[0]);
-  //   setChosenAnimeMyR([...resp.data]);
-  // };
 
   const handleCloseModal = () => {
     setOpenModal(false);
@@ -92,13 +100,7 @@ const AnimeListPage = (props) => {
         p={2}
         spacing={1}
       >
-        {/* {[...Array(4).keys()].map((value) => (
-        <Grid key={value} sx={{ px: 1 }} item p={1}>
-          <AnimeCard />
-        </Grid>
-      ))} */}
         <Grid item align="center" xs={12} p={2}>
-          {/* <form noValidate autoComplete="off" onSubmit={handleSearch}> */}
           <TextField
             sx={{
               backgroundColor: "#333",
@@ -116,47 +118,38 @@ const AnimeListPage = (props) => {
               ),
             }}
             value={search}
-            // onChange={(e) => {
-            //   setSearchValue(e.target.value);
-            // }}
-            // onChange={handleSearch}
             onChange={(e) => {
-              setSearchValue(e.target.value);
               handleSearch(e);
             }}
           />
-          {/* <SearchIcon></SearchIcon> */}
-          {/* </form> */}
         </Grid>
-        {search === ""
-          ? animes.map((anime) => (
-              <Grid item key={anime._id} p={1}>
-                <AnimeCard
-                  anime={anime}
-                  handleClickOpenModal={handleClickOpenModal}
-                  setChosenAnime={setChosenAnime}
-                  setChosenAnimeMyR={setChosenAnimeMyR}
-                />
-              </Grid>
-            ))
-          : queryAnimes.map((anime) => (
-              <Grid item key={anime._id} p={1}>
-                <AnimeCard
-                  anime={anime}
-                  handleClickOpenModal={handleClickOpenModal}
-                  setChosenAnime={setChosenAnime}
-                  setChosenAnimeMyR={setChosenAnimeMyR}
-                />
-              </Grid>
-            ))}
-        {/* {animes.map((anime) => (
-          <Grid item key={anime._id} p={1}>
-            <AnimeCard anime={anime} />
-          </Grid>
-        ))} */}
-        {/* <Grid item sm={4} p={2}>
-            <AnimeCard />
-          </Grid> */}
+        {loading ? (
+          <Typography variant="h3">Loading...</Typography>
+        ) : error ? (
+          <Typography variant="h3">{error}</Typography>
+        ) : search === "" ? (
+          animes.map((anime) => (
+            <Grid item key={anime._id} p={1}>
+              <AnimeCard
+                anime={anime}
+                handleClickOpenModal={handleClickOpenModal}
+                setChosenAnime={setChosenAnime}
+                setChosenAnimeMyR={setChosenAnimeMyR}
+              />
+            </Grid>
+          ))
+        ) : (
+          queryAnimes.map((anime) => (
+            <Grid item key={anime._id} p={1}>
+              <AnimeCard
+                anime={anime}
+                handleClickOpenModal={handleClickOpenModal}
+                setChosenAnime={setChosenAnime}
+                setChosenAnimeMyR={setChosenAnimeMyR}
+              />
+            </Grid>
+          ))
+        )}
       </Grid>
       <ModalAnime
         anime={chosenAnime}

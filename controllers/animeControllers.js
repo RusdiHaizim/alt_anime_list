@@ -13,7 +13,7 @@ module.exports.get_animes = (req, res) => {
           { title: { $regex: ".*" + query + ".*", $options: "i" } },
         ],
       },
-      "title eng_title score uid img_url synopsis genre_list"
+      "title eng_title score uid img_url synopsis genre_list studio"
     )
       .sort({ score: -1 })
       .limit(12)
@@ -23,7 +23,10 @@ module.exports.get_animes = (req, res) => {
       });
   } else {
     console.log(`no query in /anime`);
-    Anime.find({}, "title eng_title score uid img_url synopsis genre_list")
+    Anime.find(
+      {},
+      "title eng_title score uid img_url synopsis genre_list studio"
+    )
       .sort({ score: -1 })
       .limit(12)
       .then((animes) => res.json(animes));
@@ -45,7 +48,7 @@ module.exports.get_anime_my_rec = (req, res) => {
       .limit(12)
       .then((animes) => {
         // console.log(`MYLIST: ${typeof animes.my_recommendations}`);
-        console.log(`giving my anime reco for: ${animes.eng_title}`);
+        console.log(`giving my anime reco for: ${animes.title}`);
         const my_list = animes.my_recommendations;
         Anime.find(
           { title: { $in: my_list } },

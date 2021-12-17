@@ -1,24 +1,19 @@
 import { useState, useEffect } from "react";
 import {
   Card,
-  Container,
-  Paper,
   CardMedia,
   CardContent,
   Typography,
-  CardActionArea,
-  Modal,
-  Box,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogContentText,
 } from "@mui/material";
-import { getMyAnimeReco } from "../calls/animeCalls";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/swiper-bundle.min.css";
 import "swiper/swiper.min.css";
+import { getMyAnimeReco } from "../calls/animeCalls";
 
 import SwiperCore, { Pagination } from "swiper";
 
@@ -26,30 +21,44 @@ import SwiperCore, { Pagination } from "swiper";
 SwiperCore.use([Pagination]);
 
 const ModalAnime = (props) => {
-  const [myReco, setMyReco] = useState([]);
-  const [currAnime, setCurrAnime] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+
+  const [chosenAnimeMyR, setChosenAnimeMyR] = useState([]);
+  // check if props.anime changes, then call the getMyAnimeReco() api
   useEffect(() => {
-    // async function fetchData() {
-    //   const resp = await getMyAnimeReco(props.anime.title);
-    //   console.log(resp.data[0]);
-    //   setMyReco([...resp.data]);
-    // }
-    // console.log(`curr anime modal: ${props.anime.title}`);
-    // setCurrAnime(props.anime.title);
-    // if (currAnime !== "") {
-    //   fetchData();
-    // }
-  }, []);
+    async function fetchAnimeRecommendations() {
+      setLoading(true);
+      try {
+        // await new Promise((r) => setTimeout(r, 1000));
+        const resp = await getMyAnimeReco({ query: props.anime.uid });
+        setChosenAnimeMyR([...resp.data]);
+        setLoading(false);
+      } catch (error) {
+        console.log("Error in modal:", error);
+        setLoading(false);
+        setError("Error occured in fetching anime reco:", error);
+      }
+    }
+    if (props.anime != null) {
+      fetchAnimeRecommendations();
+    }
+  }, [props.anime]);
 
   return (
     <Dialog
       open={props.openModal}
       onClose={props.handleCloseModal}
       fullWidth={true}
-      maxWidth={true}
+      maxWidth={"xl"}
     >
       <DialogTitle>
-        Anime: <i>{props.anime}</i>
+        Anime:{" "}
+        {props.anime == null ? (
+          <Typography variant="h3">No anime selected...</Typography>
+        ) : (
+          <i>{props.anime.eng_title}</i>
+        )}
       </DialogTitle>
       <DialogContent sx={{ paddingBottom: 8 }}>
         <DialogContentText>
@@ -80,82 +89,51 @@ const ModalAnime = (props) => {
               slidesPerView: 3,
               spaceBetweenSlides: 15,
             },
-            950: {
+            900: {
               slidesPerView: 4,
               spaceBetweenSlides: 40,
             },
           }}
         >
-          {props.myRecommendations.map((anime, index) => (
-            <SwiperSlide key={anime.title}>
-              {/* <Card>
-                <CardMedia
+          {loading ? (
+            <Typography variant="h3">Loading...</Typography>
+          ) : error ? (
+            <Typography variant="h3">{error}</Typography>
+          ) : (
+            chosenAnimeMyR.map((anime, index) => (
+              <SwiperSlide key={anime.title}>
+                <Card
                   sx={{
-                    height: "auto",
-                    height: 240,
-                    width: "auto",
-                    width: 200,
+                    padding: 2,
+                    boxShadow: 0,
                   }}
-                  component="img"
-                  // width="100%"
-                  image={anime.img_url}
-                  alt="Anime Img"
-                />
-              </Card>
-              <CardContent>
-                <Typography
-                  sx={{
-                    color: "text.secondary",
-                  }}
-                  noWrap
-                  variant="h4"
                 >
-                  {anime.title}
-                </Typography>
-              </CardContent> */}
-              <Card
-                sx={{
-                  padding: 2,
-                  boxShadow: 0,
-                }}
-              >
-                <CardMedia
-                  sx={{
-                    minHeight: 200,
-                    height: "auto",
-                    width: "100%",
-                  }}
-                  component="img"
-                  // width="100%"
-                  image={anime.img_url}
-                  alt="Anime Img"
-                />
-                <CardContent sx={{ align: "center" }}>
-                  <Typography
+                  <CardMedia
                     sx={{
-                      color: "text.secondary",
+                      minHeight: 200,
+                      height: "auto",
+                      width: "100%",
                     }}
-                    variant="h4"
-                  >
-                    {anime.eng_title}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </SwiperSlide>
-          ))}
+                    component="img"
+                    // width="100%"
+                    image={anime.img_url}
+                    alt="Anime Img"
+                  />
+                  <CardContent sx={{ align: "center" }}>
+                    <Typography
+                      sx={{
+                        color: "text.secondary",
+                      }}
+                      variant="h4"
+                    >
+                      {anime.eng_title}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </SwiperSlide>
+            ))
+          )}
         </Swiper>
-        {/* <DialogContentText>
-          {props.myRecommendations.map((anime, index) => (
-            <Typography
-              key={anime.title}
-              noWrap
-              display="block"
-              variant="body2"
-            >
-              {anime.title}, {anime.img_url}
-            </Typography>
-          ))}
-        </DialogContentText> */}
       </DialogContent>
     </Dialog>
   );

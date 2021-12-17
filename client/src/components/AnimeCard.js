@@ -6,8 +6,6 @@ import {
   Typography,
   CardActionArea,
   Popover,
-  Modal,
-  Box,
 } from "@mui/material";
 import PopoverCard from "./PopoverCard";
 import { getMyAnimeReco } from "../calls/animeCalls";
@@ -60,7 +58,7 @@ const AnimeCard = (props) => {
 
   const handleModalOpen = async () => {
     props.handleClickOpenModal();
-    props.setChosenAnime(props.anime.eng_title);
+    props.setChosenAnime(props.anime);
     queryAnimeMyR(props.anime.uid);
   };
 
@@ -94,16 +92,15 @@ const AnimeCard = (props) => {
       onMouseOver={hoverOn}
       onMouseOut={hoverOff}
       raised={hover.raised}
-      zDepth={hover.shadow}
     >
       <CardActionArea onClick={handleModalOpen}>
         <CardMedia
           sx={{
-            height: "auto",
             height: 300,
-            width: "auto",
             width: 240,
           }}
+          aria-owns={openPopover ? "mouse-over-popover" : undefined}
+          aria-haspopup="true"
           component="img"
           width="100%"
           image={img_url}
@@ -112,6 +109,7 @@ const AnimeCard = (props) => {
           onMouseLeave={handlePopoverClose}
         />
         <Popover
+          id="mouse-over-popover"
           sx={{ pointerEvents: "none" }}
           open={openPopover}
           anchorEl={anchorEl}
@@ -125,6 +123,8 @@ const AnimeCard = (props) => {
           }}
           onClose={handlePopoverClose}
           disableRestoreFocus
+          disableAutoFocus={true}
+          disableEnforceFocus={true}
         >
           <PopoverCard anime={props.anime} />
         </Popover>
@@ -132,6 +132,8 @@ const AnimeCard = (props) => {
           <Typography
             sx={{
               color: "text.secondary",
+              fontSize: "0.8rem",
+              textAlign: "center",
             }}
             noWrap
             variant="h2"
