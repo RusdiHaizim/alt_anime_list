@@ -1,40 +1,117 @@
 const Anime = require("../models/Anime");
 
-// Get all animes (limited)
-module.exports.get_animes = (req, res) => {
+/**
+ * Get all animes
+ * query: If specified, shows the animes which contain the queried value
+ * page: Default to 1, shows the animes corresponding to that page (using skip and limit)
+ * limit: Default to 10, shows the number of animes per page
+ * @param { query, page, limit } req
+ * @param {*} res
+ */
+module.exports.get_animes = async (req, res) => {
   const { query } = req.query;
   // console.log("getting animes", query);
-  if (query !== "") {
-    // {$or:[{region: "NA"},{sector:"Some Sector"}]}
-    Anime.find(
-      {
+  const page = parseInt(req.query.page) || 1;
+  const pageSize = parseInt(req.query.limit) || 12;
+  const skip = (page - 1) * pageSize;
+
+  try {
+    if (query !== "") {
+      // {$or:[{region: "NA"},{sector:"Some Sector"}]}
+
+      const total = await Anime.countDocuments({
         $or: [
           { eng_title: { $regex: ".*" + query + ".*", $options: "i" } },
           { title: { $regex: ".*" + query + ".*", $options: "i" } },
         ],
-      },
-      "title eng_title score uid img_url synopsis genre_list studio"
-    )
-      .sort({ score: -1 })
-      .limit(12)
-      .then((animes) => {
-        res.json(animes);
-        // console.log(`query given: ${query}`);
       });
-  } else {
-    console.log(`no query in /anime`);
-    Anime.find(
-      {},
-      "title eng_title score uid img_url synopsis genre_list studio"
-    )
-      .sort({ score: -1 })
-      .limit(12)
-      .then((animes) => res.json(animes));
+      const pages = Math.ceil(total / pageSize);
+      console.log(`Queried results, total:${total}, pages:${pages}`);
+
+      if (total !== 0 && page > pages) {
+        // return res.status(404).json({
+        //   status: "fail",
+        //   message: "Page exceeds number of pages for query",
+        // });
+        return res.json({
+          page: 0,
+          pages: 0,
+          data: [],
+        });
+      }
+
+      const result = await Anime.find(
+        {
+          $or: [
+            { eng_title: { $regex: ".*" + query + ".*", $options: "i" } },
+            { title: { $regex: ".*" + query + ".*", $options: "i" } },
+          ],
+        },
+        "title eng_title score uid img_url synopsis genre_list studio"
+      )
+        .sort({ score: -1 })
+        .limit(pageSize)
+        .skip(skip);
+
+      res.json({
+        page: page,
+        pages: pages,
+        data: result,
+      });
+
+      // Anime.find(
+      //   {
+      //     $or: [
+      //       { eng_title: { $regex: ".*" + query + ".*", $options: "i" } },
+      //       { title: { $regex: ".*" + query + ".*", $options: "i" } },
+      //     ],
+      //   },
+      //   "title eng_title score uid img_url synopsis genre_list studio"
+      // )
+      //   .sort({ score: -1 })
+      //   .limit(12)
+      //   .then((animes) => {
+      //     res.json(animes);
+      //   });
+    } else {
+      const total = await Anime.countDocuments();
+      const pages = Math.ceil(total / pageSize);
+      console.log(
+        `no query in /anime, getting all ${pages} default pages instead...`
+      );
+
+      if (page > pages) {
+        return res.status(404).json({
+          status: "fail",
+          message: "Page exceeds number of pages for query",
+        });
+      }
+
+      const result = await Anime.find(
+        {},
+        "title eng_title score uid img_url synopsis genre_list studio"
+      )
+        .sort({ score: -1 })
+        .limit(pageSize)
+        .skip(skip);
+
+      res.json({
+        page: page,
+        pages: pages,
+        data: result,
+      });
+    }
+  } catch (error) {
+    console.log("In /anime, error:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Server error",
+    });
   }
 };
 
 // Query for 'my' anime recommendations
-module.exports.get_anime_my_rec = (req, res) => {
+module.exports.get_anime_my_rec = async (req, res) => {
   const { query } = req.query;
   if (Number.isNaN(Number(query))) {
     console.log(`whew: ${query}`);
@@ -43,29 +120,25 @@ module.exports.get_anime_my_rec = (req, res) => {
       .json({ message: "Query is not a number! Please give anime uid" });
   } else {
     console.log(`query: ${typeof query} ${Number(query)}`);
-    Anime.findOne({ uid: query }, "title eng_title my_recommendations")
-      .sort({ score: -1 })
-      .limit(12)
-      .then((animes) => {
-        // console.log(`MYLIST: ${typeof animes.my_recommendations}`);
-        console.log(`giving my anime reco for: ${animes.title}`);
-        const my_list = animes.my_recommendations;
-        Anime.find(
-          { title: { $in: my_list } },
-          "title eng_title img_url -_id"
-        ).then((animeLinks) => {
-          // console.log(`got the links: ${animeLinks}`);
-          res.json(animeLinks);
-        });
-      });
+    try {
+      const chosenAnime = await Anime.findOne(
+        { uid: query },
+        "title eng_title my_recommendations"
+      );
+      console.log("Reco for:", chosenAnime.title);
+      const result = await Anime.find(
+        { title: { $in: chosenAnime.my_recommendations } },
+        "title eng_title img_url -_id"
+      );
 
-    // Anime.findOne({ uid: query }, "title my_recommendations")
-    //   .sort({ score: -1 })
-    //   .limit(12)
-    //   .then((animes) => {
-    //     res.json(animes);
-    //     console.log(`giving my anime reco for: ${animes.title}`);
-    //   });
+      res.json(result);
+    } catch (error) {
+      console.log("In /anime_my_reco, error:", error);
+      res.status(500).json({
+        status: "error",
+        message: "Server error",
+      });
+    }
   }
 };
 
@@ -76,15 +149,15 @@ module.exports.get_anime_my_rec = (req, res) => {
 // };
 
 // Get animes
-module.exports.query_animes = (req, res) => {
-  const { anime } = req.params;
-  console.log("hitting query");
-  console.log(query);
-  Anime.find(
-    { title: { $regex: ".*" + query + ".*", $options: "i" } },
-    "title score link img_url synopsis genre_list"
-  )
-    .sort({ score: -1 })
-    .limit(12)
-    .then((animes) => res.json(animes));
-};
+// module.exports.query_animes = (req, res) => {
+//   const { anime } = req.params;
+//   console.log("hitting query");
+//   console.log(query);
+//   Anime.find(
+//     { title: { $regex: ".*" + query + ".*", $options: "i" } },
+//     "title score link img_url synopsis genre_list"
+//   )
+//     .sort({ score: -1 })
+//     .limit(12)
+//     .then((animes) => res.json(animes));
+// };

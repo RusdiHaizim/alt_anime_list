@@ -1,6 +1,6 @@
 // import "./App.css";
 import { ThemeProvider } from "@mui/material/styles";
-import { Route, BrowserRouter as Router } from "react-router-dom";
+import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
 import Header from "./components/Header";
 import theme from "./theme/index";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -16,9 +16,10 @@ function App() {
       {/* Anime card list */}
 
       <Router>
-        <Route path="/">
-          <AnimeListPage />
-        </Route>
+        <Switch>
+          <Route exact path="/page/:pageNumber" component={AnimeListPage} />
+          <Route exact path="/" component={AnimeListPage} />
+        </Switch>
       </Router>
     </ThemeProvider>
   );

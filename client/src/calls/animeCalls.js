@@ -2,11 +2,12 @@ import axios from "axios";
 import api from "../api";
 
 export const getAnimes = async (data) => {
-  const { query } = data;
+  const { query, page } = data;
   // console.log("get anime call:", query);
   const resp = await axios.get(api.getAnimes, {
     params: {
       query: query,
+      page: page,
     },
   });
   return resp;
