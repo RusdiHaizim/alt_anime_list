@@ -17,7 +17,7 @@ function App() {
 
       <Router>
         <Switch>
-          <Route exact path="/page/:pageNumber" component={AnimeListPage} />
+          {/* <Route exact path="/page/:pageNumber" component={AnimeListPage} /> */}
           <Route exact path="/" component={AnimeListPage} />
         </Switch>
       </Router>

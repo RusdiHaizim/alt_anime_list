@@ -22,6 +22,9 @@ const theme = createTheme({
     allVariants: {
       color: grey[100],
     },
+    h1: {
+      fontSize: "1.5rem",
+    },
     h2: {
       fontSize: "1rem",
     },

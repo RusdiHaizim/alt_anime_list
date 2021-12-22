@@ -12,52 +12,64 @@ import SearchIcon from "@mui/icons-material/Search";
 import ModalAnime from "../components/ModalAnime";
 import debounce from "lodash.debounce";
 import Pagination from "../components/Pagination";
+import { useHistory, useLocation } from "react-router-dom";
+
+import queryString from "query-string";
 
 const AnimeListPage = ({ match, ...rest }) => {
   // display initial animes (w/o search term)
   const [animes, setAnimes] = useState([]);
   // display animes after typing 'query' in search bar
   const [queryAnimes, setQueryAnimes] = useState([]);
-  const [search, setSearchValue] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
   // Page-related stuff
-  const pageNumber = match.params.pageNumber || 1;
+  const history = useHistory();
+  const location = useLocation();
+  const path = window.location.pathname;
+  const initialQueryString = queryString.parse(location.search);
+  const initialPageNumber = Number(initialQueryString.page) || 1;
+  const initialSearch =
+    initialQueryString.search == null ? "" : String(initialQueryString.search);
+
+  // const pageNumber = match.params.pageNumber || 1;
+  const pageNumber = Number(initialPageNumber) || 1;
   const [page, setPage] = useState(pageNumber);
   const [pages, setPages] = useState(1);
+  const [search, setSearchValue] = useState(initialSearch);
 
-  async function fetchDefaultAnime() {
-    setLoading(true);
-    try {
-      // await new Promise((r) => setTimeout(r, 1000));
-      const resp = await getAnimes({ query: "", page: page });
-      // console.log("resp.data", resp.data);
-      setPages(resp.data.pages);
-      setAnimes([...resp.data.data]);
-      setLoading(false);
-    } catch (error) {
-      console.log("Error in animeList:", error);
-      setLoading(false);
-      setError("Error occured in fetching initial animelist:", error);
+  useEffect(() => {
+    async function fetchDefaultAnime() {
+      setLoading(true);
+      try {
+        // await new Promise((r) => setTimeout(r, 1000));
+        const resp = await getAnimes({ query: "", page: page });
+        // console.log("resp.data", resp.data);
+        setPages(resp.data.pages);
+        setAnimes([...resp.data.data]);
+        setLoading(false);
+      } catch (error) {
+        console.log("Error in animeList:", error);
+        setLoading(false);
+        setError("Error occured in fetching initial animelist:", error);
+      }
     }
-  }
 
-  useEffect(() => {
-    console.log("Fetching top animes to show initially");
-    fetchDefaultAnime();
-  }, []);
-
-  useEffect(() => {
     if (search === "") {
-      console.log("Search empty, refetching initial list");
       setQueryAnimes([]);
       fetchDefaultAnime();
     } else {
       searchApi(search);
     }
-  }, [search, page]);
+    if (search === "") {
+      history.push(`${path}?page=${page}`);
+    } else {
+      history.push(`${path}?page=${page}&search=${search}`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, page, history]);
 
   // eslint-disable-next-line
   const debouncedSearch = useCallback(
