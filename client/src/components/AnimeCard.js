@@ -6,6 +6,7 @@ import {
   Typography,
   CardActionArea,
   Popover,
+  Box,
 } from "@mui/material";
 import PopoverCard from "./PopoverCard";
 import { getMyAnimeReco } from "../calls/animeCalls";
@@ -24,9 +25,8 @@ const AnimeCard = (props) => {
     shadow: 1,
   });
   const [cardState, setCardState] = useState({
-    maxWidth: 240,
-    maxHeight: 360,
-    borderRadius: 3,
+    height: 300,
+    width: 240,
     opacity: 1,
   });
 
@@ -34,7 +34,7 @@ const AnimeCard = (props) => {
 
   const hoverOn = () => {
     setHover({ ...hover, raised: true, shadow: 3 });
-    setCardState({ ...cardState, opacity: 0.5 });
+    setCardState({ ...cardState, opacity: 0.7 });
   };
 
   const hoverOff = () => {
@@ -43,14 +43,25 @@ const AnimeCard = (props) => {
   };
 
   //   Popover code
-
+  const [cardOverlay, setCardOverlay] = useState({
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    display: "none",
+    bgcolor: "rgba(1,1,1,0.6)",
+    padding: "10px",
+    textAlign: "center",
+  });
   const [anchorEl, setAnchorEl] = useState(null);
 
   const handlePopoverOpen = (event) => {
+    setCardOverlay({ ...cardOverlay, display: "block" });
     setAnchorEl(event.currentTarget);
   };
 
   const handlePopoverClose = () => {
+    setCardOverlay({ ...cardOverlay, display: "none" });
     setAnchorEl(null);
   };
 
@@ -88,17 +99,14 @@ const AnimeCard = (props) => {
 
   return (
     <Card
-      sx={cardState}
-      onMouseOver={hoverOn}
-      onMouseOut={hoverOff}
+      sx={{ maxWidth: 240, maxHeight: 360, borderRadius: 3 }}
       raised={hover.raised}
     >
       <CardActionArea onClick={handleModalOpen}>
         <CardMedia
-          sx={{
-            height: 300,
-            width: 240,
-          }}
+          sx={cardState}
+          onMouseOver={hoverOn}
+          onMouseOut={hoverOff}
           aria-owns={openPopover ? "mouse-over-popover" : undefined}
           aria-haspopup="true"
           component="img"
@@ -108,14 +116,19 @@ const AnimeCard = (props) => {
           onMouseEnter={handlePopoverOpen}
           onMouseLeave={handlePopoverClose}
         />
+        <Box sx={cardOverlay}>
+          <Typography color="white" variant="body2">
+            <b>Score:</b> {props.anime.score}
+          </Typography>
+        </Box>
         <Popover
           id="mouse-over-popover"
           sx={{ pointerEvents: "none" }}
           open={openPopover}
           anchorEl={anchorEl}
           anchorOrigin={{
-            vertical: "center",
-            horizontal: "right",
+            vertical: "bottom",
+            horizontal: "bottom",
           }}
           transformOrigin={{
             vertical: "top",
