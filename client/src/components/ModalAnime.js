@@ -78,7 +78,7 @@ const ModalAnime = (props) => {
   return (
     <>
       {props.anime == null ? (
-        <Typography variant="h3">No anime selected...</Typography>
+        <></>
       ) : (
         <Dialog
           open={props.openModal}
