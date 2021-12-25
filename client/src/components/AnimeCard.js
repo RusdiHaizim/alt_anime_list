@@ -128,7 +128,7 @@ const AnimeCard = (props) => {
           anchorEl={anchorEl}
           anchorOrigin={{
             vertical: "bottom",
-            horizontal: "bottom",
+            horizontal: "center",
           }}
           transformOrigin={{
             vertical: "top",

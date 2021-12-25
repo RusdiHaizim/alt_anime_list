@@ -26,7 +26,7 @@ const AnimeListPage = ({ match, ...rest }) => {
   const [error, setError] = useState(false);
 
   // Page-related stuff
-  const history = useHistory();
+  let history = useHistory();
   const location = useLocation();
   const path = window.location.pathname;
   const initialQueryString = queryString.parse(location.search);

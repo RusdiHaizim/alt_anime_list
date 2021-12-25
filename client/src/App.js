@@ -5,6 +5,7 @@ import Header from "./components/Header";
 import theme from "./theme/index";
 import CssBaseline from "@mui/material/CssBaseline";
 import AnimeListPage from "./pages/AnimeListPage";
+import NotFoundPage from "./pages/NotFoundPage";
 
 function App() {
   return (
@@ -17,8 +18,8 @@ function App() {
 
       <Router>
         <Switch>
-          {/* <Route exact path="/page/:pageNumber" component={AnimeListPage} /> */}
           <Route exact path="/" component={AnimeListPage} />
+          <Route path="*" component={NotFoundPage} />
         </Switch>
       </Router>
     </ThemeProvider>
