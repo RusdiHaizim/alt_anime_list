@@ -39,65 +39,85 @@ const AnimeListPage = ({ match, ...rest }) => {
   const [page, setPage] = useState(pageNumber);
   const [pages, setPages] = useState(1);
   const [search, setSearchValue] = useState(initialSearch);
+  const [dSearch, setDSearch] = useState(initialSearch);
+
+  async function fetchDefaultAnime() {
+    setLoading(true);
+    try {
+      // await new Promise((r) => setTimeout(r, 1000));
+      const resp = await getAnimes({ query: "", page: page });
+      // console.log("resp.data", resp.data);
+      setPages(resp.data.pages);
+      setAnimes([...resp.data.data]);
+      setLoading(false);
+    } catch (error) {
+      console.log("Error in animeList:", error);
+      setLoading(false);
+      setError("Error occured in fetching initial animelist:", error);
+    }
+  }
+
+  async function fetchQueryAnime() {
+    setLoading(true);
+    try {
+      const resp = await getAnimes({ query: search, page: page });
+      setPages(resp.data.pages);
+      setQueryAnimes([...resp.data.data]);
+      setLoading(false);
+    } catch (error) {
+      console.log("Error in animeList:", error);
+      setLoading(false);
+      setError("Error occured in fetching initial animelist:", error);
+    }
+  }
 
   useEffect(() => {
-    async function fetchDefaultAnime() {
-      setLoading(true);
-      try {
-        // await new Promise((r) => setTimeout(r, 1000));
-        const resp = await getAnimes({ query: "", page: page });
-        // console.log("resp.data", resp.data);
-        setPages(resp.data.pages);
-        setAnimes([...resp.data.data]);
-        setLoading(false);
-      } catch (error) {
-        console.log("Error in animeList:", error);
-        setLoading(false);
-        setError("Error occured in fetching initial animelist:", error);
+    if (page === 1) {
+      // console.log("dsearch called");
+      if (dSearch === "") {
+        fetchDefaultAnime();
+        history.push(`${path}?page=${page}`);
+      } else {
+        fetchQueryAnime();
+        history.push(`${path}?page=${page}&search=${search}`);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dSearch]);
 
-    if (search === "") {
-      setQueryAnimes([]);
+  useEffect(() => {
+    // console.log("page called");
+    if (dSearch === "") {
       fetchDefaultAnime();
-    } else {
-      searchApi(search);
-    }
-    if (search === "") {
       history.push(`${path}?page=${page}`);
     } else {
+      fetchQueryAnime();
       history.push(`${path}?page=${page}&search=${search}`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, page, history]);
+  }, [page]);
 
   // eslint-disable-next-line
   const debouncedSearch = useCallback(
-    debounce((nextValue) => searchApi(nextValue), 300),
+    debounce((nextValue) => searchHandleApi(nextValue), 300),
     []
   );
+
+  const searchHandleApi = async (anime_q) => {
+    setDSearch(anime_q);
+    if (anime_q === "") {
+      setPage(1);
+      setQueryAnimes([]);
+    } else {
+      setPage(1);
+      setAnimes([]);
+    }
+  };
 
   const handleSearch = async (e) => {
     e.preventDefault();
     setSearchValue(e.target.value);
     debouncedSearch(e.target.value);
-  };
-
-  const searchApi = async (anime_q) => {
-    setLoading(true);
-    setPage(page);
-    if (anime_q === "") {
-      setQueryAnimes([]);
-      setPage(1);
-      setLoading(false);
-    } else {
-      // await new Promise((r) => setTimeout(r, 1000));
-      const resp = await getAnimes({ query: anime_q, page: page });
-      setPages(resp.data.pages);
-      setQueryAnimes([...resp.data.data]);
-      setAnimes([]);
-      setLoading(false);
-    }
   };
 
   //   Model Code
@@ -107,8 +127,6 @@ const AnimeListPage = ({ match, ...rest }) => {
 
   const handleClickOpenModal = async () => {
     setOpenModal(true);
-    // console.log("CHOSEN ANIME:", chosenAnime);
-    // console.log("CHOSEN ANIME R:", chosenAnimeMyR);
   };
 
   const handleCloseModal = () => {
